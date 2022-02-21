@@ -27,6 +27,7 @@ class GTSRB(Dataset):
         
         img = Image.open(item)
         img = img.resize((225,225))
+        # img = img.resize((64,64))
         
         img = self.transform(img)
 

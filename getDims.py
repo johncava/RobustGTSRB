@@ -19,8 +19,8 @@ print(max_width, max_height)
 
 from PIL import Image
 
-img = Image.open('./00000/00000_00000.ppm')
-img = img.resize((225,225))
+img = Image.open('/scratch/jcava/GTSRB/GTSRB/Training/00000/00000_00000.ppm')
+img = img.resize((64,64))
 
 import numpy as np
 img = np.array(img)
@@ -41,14 +41,14 @@ class Model(nn.Module):
         super(Model, self).__init__()
         self.conv1 = nn.Conv2d(3, 5, (3,3))
         self.conv2 = nn.Conv2d(5,5, (3,3))
-        self.pool1 = nn.MaxPool2d(4)
+        self.pool1 = nn.MaxPool2d(2)
         self.conv3 = nn.Conv2d(5, 10,(3,3))
         self.conv4 = nn.Conv2d(10, 15, (3,3))
-        self.pool2 = nn.MaxPool2d(4)
+        self.pool2 = nn.MaxPool2d(2)
         self.conv5 = nn.Conv2d(15, 15, (3,3))
         self.conv6 = nn.Conv2d(15, 20, (3,3))
         self.pool3 = nn.MaxPool2d(2)
-        self.linear = nn.Linear(320, 43)
+        # self.linear = nn.Linear(320, 43)
 
     def forward(self, x):
         x = F.relu(self.conv1(x))
@@ -66,8 +66,9 @@ class Model(nn.Module):
         
         x = self.pool3(x)
 
-        x = self.linear(x.flatten())
-        return x
+        # x = self.linear(x.flatten())
+    
+        return x.flatten()
 
 import torchvision.transforms as transforms
 transform = transforms.ToTensor()

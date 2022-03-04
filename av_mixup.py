@@ -51,7 +51,7 @@ gtsrb_dataset = GTSRB(root_dir='/scratch/jcava/GTSRB/GTSRB/Training')
 batch_size = 128
 dataset_loader = torch.utils.data.DataLoader(gtsrb_dataset,
                                              batch_size=batch_size, shuffle=True,
-                                             num_workers=4)
+                                             num_workers=8)
 
 ###
 # Initial Training
@@ -61,7 +61,7 @@ model = Model().half().cuda()
 criterion = nn.CrossEntropyLoss()
 import torch.optim as optim
 optimizer = optim.Adam(model.parameters(), lr=1e-2)
-max_epochs = 1
+max_epochs = 100
 import time
 from tqdm import tqdm
 print(len(dataset_loader))
@@ -80,16 +80,25 @@ for epoch in range(max_epochs):
     print('Epoch ' + str(epoch) + ': ' + str(end-start) + 's')
 
 
-from advertorch.attacks import LinfPGDAttack
+from advertorch.attacks import GradientSignAttack
+
+# adversary = LinfPGDAttack(
+#     model, loss_fn=nn.CrossEntropyLoss(reduction="sum"), eps=0.3,
+#     nb_iter=40, eps_iter=0.01, rand_init=True, clip_min=0.0, clip_max=1.0,
+#     targeted=False)
 
 from losses import AlphaLoss
 
 loss_fn = AlphaLoss(classes=43, params={'alpha' : 1.2})
 
+from advertorch.attacks import LinfPGDAttack
+
 adversary = LinfPGDAttack(
     model, loss_fn=loss_fn, eps=0.3,
     nb_iter=40, eps_iter=0.01, rand_init=True, clip_min=0.0, clip_max=1.0,
     targeted=False)
+
+# adversary = GradientSignAttack(model, loss_fn=loss_fn, eps=0.3, clip_min=0.0, clip_max=1.0, targeted=False)
 
 ###
 # Adversarial Training
@@ -109,7 +118,6 @@ for epoch in range(max_epochs):
         loss = criterion(pred, y)
         loss.backward()
         optimizer.step()
-        break
     end = time.time()
     print('Epoch ' + str(epoch) + ': ' + str(end-start) + 's')
 

@@ -12,7 +12,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from advertorch.attacks import LinfPGDAttack
+from advertorch.attacks import GradientSignAttack
 
 from losses import AlphaLoss
 
@@ -141,10 +141,7 @@ class Model(nn.Module):
         if check == 0:
             print('Checkpoint1')
             check1 = Checkpoint1(self.conv3, self.conv4, self.conv5, self.conv6, self.linear)
-            adversary = LinfPGDAttack(
-                    check1, loss_fn=self.loss_fn, eps=0.3,
-                    nb_iter=40, eps_iter=0.01, rand_init=True, clip_min=0.0, clip_max=1.0,
-                    targeted=False)
+            adversary = GradientSignAttack(check1, loss_fn=self.loss_fn, eps=0.3, clip_min=0.0, clip_max=1.0, targeted=False)
             adv_untargeted = adversary.perturb(x, y)
             alpha = torch.rand(1).half().cuda()
             mix = alpha*x + (torch.ones(1).half().cuda() - alpha)*adv_untargeted
@@ -156,10 +153,7 @@ class Model(nn.Module):
 
             x = self.pool2(x)
             check2 = Checkpoint2(self.conv5, self.conv6, self.linear)
-            adversary = LinfPGDAttack(
-                    check2, loss_fn=self.loss_fn, eps=0.3,
-                    nb_iter=40, eps_iter=0.01, rand_init=True, clip_min=0.0, clip_max=1.0,
-                    targeted=False)
+            adversary = GradientSignAttack(check2, loss_fn=self.loss_fn, eps=0.3, clip_min=0.0, clip_max=1.0, targeted=False)
             adv_untargeted = adversary.perturb(x, y)
             alpha = torch.rand(1).half().cuda()
             mix = alpha*x + (torch.ones(1).half().cuda() - alpha)*adv_untargeted
@@ -177,10 +171,7 @@ class Model(nn.Module):
             x = self.pool3(x)
 
             check3 = Checkpoint3(self.linear)
-            adversary = LinfPGDAttack(
-                    check3, loss_fn=self.loss_fn, eps=0.3,
-                    nb_iter=40, eps_iter=0.01, rand_init=True, clip_min=0.0, clip_max=1.0,
-                    targeted=False)
+            adversary = GradientSignAttack(check3, loss_fn=self.loss_fn, eps=0.3, clip_min=0.0, clip_max=1.0, targeted=False)
             adv_untargeted = adversary.perturb(x, y)
             alpha = torch.rand(1).half().cuda()
             mix = alpha*x + (torch.ones(1).half().cuda() - alpha)*adv_untargeted
@@ -203,7 +194,7 @@ model = Model().half().cuda()
 criterion = nn.CrossEntropyLoss()
 import torch.optim as optim
 optimizer = optim.Adam(model.parameters(), lr=1e-2)
-max_epochs = 1
+max_epochs = 100
 import time
 from tqdm import tqdm
 print(len(dataset_loader))
@@ -225,18 +216,19 @@ for epoch in range(max_epochs):
 ###
 # Adversarial Training
 ###
+import random
 print(len(dataset_loader))
 for epoch in range(max_epochs):
     start = time.time()
     for i, (x,y) in tqdm(enumerate(dataset_loader)):
         x = x.half().cuda()
         y = y.cuda()
-        pred = model.forward_attack(x,y,2)
+        c = random.randint(0,2)
+        pred = model.forward_attack(x,y,c)
         optimizer.zero_grad()
         loss = criterion(pred, y)
         loss.backward()
         optimizer.step()
-        break
     end = time.time()
     print('Epoch ' + str(epoch) + ': ' + str(end-start) + 's')
 

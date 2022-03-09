@@ -68,20 +68,20 @@ optimizer = optim.Adam(model.parameters(), lr=1e-2)
 max_epochs = 100
 import time
 from tqdm import tqdm
-print(len(dataset_loader))
-for epoch in range(max_epochs):
-    start = time.time()
-    for i, (x,y) in tqdm(enumerate(dataset_loader)):
-        x = x.half().cuda()
-        y = y.cuda()
-        pred = model(x)
-        optimizer.zero_grad()
-        loss = criterion(pred, y)
-        loss.backward()
-        optimizer.step()
-        break
-    end = time.time()
-    print('Epoch ' + str(epoch) + ': ' + str(end-start) + 's')
+# print(len(dataset_loader))
+# for epoch in range(max_epochs):
+#     start = time.time()
+#     for i, (x,y) in tqdm(enumerate(dataset_loader)):
+#         x = x.half().cuda()
+#         y = y.cuda()
+#         pred = model(x)
+#         optimizer.zero_grad()
+#         loss = criterion(pred, y)
+#         loss.backward()
+#         optimizer.step()
+#         break
+#     end = time.time()
+#     print('Epoch ' + str(epoch) + ': ' + str(end-start) + 's')
 
 
 from advertorch.attacks import GradientSignAttack

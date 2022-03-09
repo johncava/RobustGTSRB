@@ -83,7 +83,7 @@ class Model(nn.Module):
         self.pool3 = nn.MaxPool2d(4)
         self.linear = nn.Linear(80, 43)
 
-        self.loss_fn = AlphaLoss(classes=43, params={'alpha' : 1.2})
+        self.loss_fn = AlphaLoss(classes=43, params={'alpha' : 1.0})
 
     def forward(self, x):
         x = F.relu(self.conv1(x))

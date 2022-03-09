@@ -93,7 +93,7 @@ from advertorch.attacks import GradientSignAttack
 
 from losses import AlphaLoss
 
-loss_fn = AlphaLoss(classes=43, params={'alpha' : 1.2})
+loss_fn = AlphaLoss(classes=43, params={'alpha' : 1.0})
 
 from advertorch.attacks import LinfPGDAttack
 

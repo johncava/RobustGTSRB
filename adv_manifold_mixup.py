@@ -179,13 +179,17 @@ class Model(nn.Module):
 
         return x                
 
-gtsrb_dataset = GTSRB(root_dir='/scratch/jcava/GTSRB/GTSRB/Training')
+gtsrb_dataset_train = GTSRB(root_dir='/scratch/jcava/GTSRB/GTSRB/Training')
+gtsrb_dataset_test = GTSRB(root_dir='/scratch/jcava/GTSRB/GTSRB/Training', training=False)
 
 batch_size = 128
-dataset_loader = torch.utils.data.DataLoader(gtsrb_dataset,
+dataset_loader = torch.utils.data.DataLoader(gtsrb_dataset_train,
                                              batch_size=batch_size, shuffle=True,
-                                             num_workers=4)
+                                             num_workers=8)
 
+test_dataset = torch.utils.data.DataLoader(gtsrb_dataset_test,
+                                             batch_size=1, shuffle=True,
+                                             num_workers=8)
 ###
 # Initial Training
 ###
@@ -232,4 +236,20 @@ for epoch in range(max_epochs):
     end = time.time()
     print('Epoch ' + str(epoch) + ': ' + str(end-start) + 's')
 
+print('Done')
+
+###
+# Testing
+###
+print(len(test_dataset))
+acc = 0
+for i, (x,y) in tqdm(enumerate(test_dataset)):
+    x = x.half().cuda()
+    y = y.cuda()
+    pred = model(x)
+    pred = torch.argmax(pred.squeeze(0)).item()
+    # print(pred.item(), y.squeeze(0).item())
+    if pred == y.squeeze(0).item():
+        acc += 1
+print('Adversarial Manifold Mixup Training Accuracy: ' + str(float(acc/len(test_dataset))))
 print('Done')

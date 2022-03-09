@@ -1,7 +1,3 @@
-##
-# AVMixup Implementation
-##
-
 from dataset import *
 
 ###
@@ -57,6 +53,7 @@ dataset_loader = torch.utils.data.DataLoader(gtsrb_dataset_train,
 test_dataset = torch.utils.data.DataLoader(gtsrb_dataset_test,
                                              batch_size=1, shuffle=True,
                                              num_workers=8)
+
 ###
 # Initial Training
 ###
@@ -79,51 +76,10 @@ for epoch in range(max_epochs):
         loss = criterion(pred, y)
         loss.backward()
         optimizer.step()
-        break
+
     end = time.time()
     print('Epoch ' + str(epoch) + ': ' + str(end-start) + 's')
 
-
-from advertorch.attacks import GradientSignAttack
-
-# adversary = LinfPGDAttack(
-#     model, loss_fn=nn.CrossEntropyLoss(reduction="sum"), eps=0.3,
-#     nb_iter=40, eps_iter=0.01, rand_init=True, clip_min=0.0, clip_max=1.0,
-#     targeted=False)
-
-from losses import AlphaLoss
-
-loss_fn = AlphaLoss(classes=43, params={'alpha' : 1.2})
-
-from advertorch.attacks import LinfPGDAttack
-
-adversary = LinfPGDAttack(
-    model, loss_fn=loss_fn, eps=0.3,
-    nb_iter=40, eps_iter=0.01, rand_init=True, clip_min=0.0, clip_max=1.0,
-    targeted=False)
-
-# adversary = GradientSignAttack(model, loss_fn=loss_fn, eps=0.3, clip_min=0.0, clip_max=1.0, targeted=False)
-
-###
-# Adversarial Training
-###
-print(len(dataset_loader))
-for epoch in range(max_epochs):
-    start = time.time()
-    for i, (x,y) in tqdm(enumerate(dataset_loader)):
-        x = x.half().cuda()
-        y = y.cuda()
-        adv_untargeted = adversary.perturb(x, y)
-        # AV Mixup
-        alpha = torch.rand(1).half().cuda()
-        av_mix = alpha*x + (torch.ones(1).half().cuda() - alpha)*adv_untargeted
-        pred = model(av_mix)
-        optimizer.zero_grad()
-        loss = criterion(pred, y)
-        loss.backward()
-        optimizer.step()
-    end = time.time()
-    print('Epoch ' + str(epoch) + ': ' + str(end-start) + 's')
 
 ###
 # Testing
@@ -138,5 +94,5 @@ for i, (x,y) in tqdm(enumerate(test_dataset)):
     # print(pred.item(), y.squeeze(0).item())
     if pred == y.squeeze(0).item():
         acc += 1
-print('Adversarial Mixup Training Accuracy: ' + str(float(acc/len(test_dataset))))
+print('Baseline Accuracy: ' + str(float(acc/len(test_dataset))))
 print('Done')

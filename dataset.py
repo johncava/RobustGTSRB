@@ -10,10 +10,13 @@ import torchvision.transforms as transforms
 class GTSRB(Dataset):
     """GTSRB Image Dataset"""
 
-    def __init__(self, root_dir, training=True):
+    def __init__(self, root_dir, training=True, transform=None):
         self.root_dir = root_dir
         self.files = glob.glob(self.root_dir + '/*/*.ppm')
-        self.transform = transforms.ToTensor()
+        if transform == None:
+            self.transform = transforms.ToTensor()
+        else:
+            self.transform = transform
         self.training = training
         threshold = int(len(self.files)*0.80)
         self.training_set = self.files[:threshold]

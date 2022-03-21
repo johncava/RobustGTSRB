@@ -28,7 +28,7 @@ model.fc = nn.Linear(num_ftrs, 43)
 # print(mean,std)
 
 batch_size = 128
-gtsrb_dataset_train = GTSRB(root_dir='/scratch/jcava/GTSRB/GTSRB/Training', training=True,
+gtsrb_dataset_train = GTSRB(root_dir='/scratch/jcava/GTSRB/GTSRB/Training', minority=14, training=True,
                                             transform=transforms.Compose([transforms.RandomApply([
                                                 transforms.RandomRotation(20, resample=PIL.Image.BICUBIC),
                                                 transforms.RandomAffine(0, translate=(0.2, 0.2),
@@ -43,7 +43,7 @@ dataset_loader = torch.utils.data.DataLoader(gtsrb_dataset_train,
                                              batch_size=batch_size, shuffle=True,
                                              num_workers=8)
 
-gtsrb_dataset_test = GTSRB(root_dir='/scratch/jcava/GTSRB/GTSRB/Training', training=False)
+gtsrb_dataset_test = GTSRB(root_dir='/scratch/jcava/GTSRB/GTSRB/Training', minority=14, training=False)
 
 test_dataset = torch.utils.data.DataLoader(gtsrb_dataset_test,
                                              batch_size=1, shuffle=True,

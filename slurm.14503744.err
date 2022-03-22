@@ -1,0 +1,5 @@
+/home/jcava/.conda/envs/pytorch-1.8-gpu/lib/python3.8/site-packages/torchvision/transforms/transforms.py:1200: UserWarning: Argument resample is deprecated and will be removed since v0.10.0. Please, use interpolation instead
+  warnings.warn(
+/home/jcava/.conda/envs/pytorch-1.8-gpu/lib/python3.8/site-packages/torchvision/transforms/transforms.py:1314: UserWarning: Argument resample is deprecated and will be removed since v0.10.0. Please, use interpolation instead
+  warnings.warn(
+0it [00:00, ?it/s]1it [00:02,  2.97s/it]2it [00:03,  1.32s/it]3it [00:03,  1.25it/s]4it [00:03,  1.83it/s]5it [00:03,  2.42it/s]6it [00:03,  3.07it/s]7it [00:03,  3.64it/s]8it [00:04,  4.22it/s]9it [00:04,  3.17it/s]10it [00:04,  3.76it/s]11it [00:04,  4.19it/s]12it [00:05,  4.67it/s]13it [00:05,  4.87it/s]14it [00:05,  5.11it/s]15it [00:05,  5.29it/s]16it [00:05,  5.56it/s]17it [00:11,  1.79s/it]18it [00:11,  1.30s/it]19it [00:11,  1.04it/s]20it [00:11,  1.39it/s]21it [00:12,  1.79it/s]22it [00:12,  2.29it/s]23it [00:12,  2.80it/s]24it [00:12,  3.38it/s]slurmstepd: error: *** JOB 14503744 ON gpu9-1 CANCELLED AT 2022-03-21T13:12:26 ***

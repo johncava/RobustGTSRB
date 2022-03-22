@@ -1,0 +1,8 @@
+/home/jcava/.conda/envs/pytorch-1.8-gpu/lib/python3.8/site-packages/torchvision/transforms/transforms.py:1200: UserWarning: Argument resample is deprecated and will be removed since v0.10.0. Please, use interpolation instead
+  warnings.warn(
+/home/jcava/.conda/envs/pytorch-1.8-gpu/lib/python3.8/site-packages/torchvision/transforms/transforms.py:1314: UserWarning: Argument resample is deprecated and will be removed since v0.10.0. Please, use interpolation instead
+  warnings.warn(
+Traceback (most recent call last):
+  File "baseline-resnet18-imbalance.py", line 32, in <module>
+    gtsrb_dataset_train = GTSRB(root_dir='/scratch/jcava/GTSRB/GTSRB/Training', minority=14, training=True,
+TypeError: __init__() got an unexpected keyword argument 'minority'

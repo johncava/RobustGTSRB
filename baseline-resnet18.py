@@ -15,6 +15,8 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
+import PIL
+
 model = models.resnet18(pretrained=True)
 num_ftrs = model.fc.in_features
 model.fc = nn.Linear(num_ftrs, 43)
@@ -38,12 +40,18 @@ gtsrb_dataset_train = GTSRB(root_dir='/scratch/jcava/GTSRB/GTSRB/Training', trai
                                                 transforms.RandomAffine(0, scale=(0.8, 1.2), 
                                                                         resample=PIL.Image.BICUBIC)
                                             ]),
-                                            transforms.ToTensor()]))
+                                            transforms.ToTensor(),
+                                            transforms.Normalize(mean=[0.485, 0.456, 0.406],
+                                 std=[0.229, 0.224, 0.225])]))
 dataset_loader = torch.utils.data.DataLoader(gtsrb_dataset_train,
                                              batch_size=batch_size, shuffle=True,
                                              num_workers=8)
 
-gtsrb_dataset_test = GTSRB(root_dir='/scratch/jcava/GTSRB/GTSRB/Training', training=False)
+gtsrb_dataset_test = GTSRB(root_dir='/scratch/jcava/GTSRB/GTSRB/Training', training=False, transform=transforms.Compose([
+                                            transforms.ToTensor(),
+                                            transforms.Normalize(mean=[0.485, 0.456, 0.406],
+                                 std=[0.229, 0.224, 0.225])])                                            
+)
 
 test_dataset = torch.utils.data.DataLoader(gtsrb_dataset_test,
                                              batch_size=1, shuffle=True,
@@ -56,8 +64,8 @@ test_dataset = torch.utils.data.DataLoader(gtsrb_dataset_test,
 model = model.cuda()
 criterion = nn.CrossEntropyLoss()
 import torch.optim as optim
-optimizer = optim.Adam(model.parameters(), lr=1e-3)
-max_epochs = 100
+optimizer = optim.Adam(model.parameters(), lr=1e-3, weight_decay=5e-4)
+max_epochs = 16
 import time
 from tqdm import tqdm
 print(len(dataset_loader))

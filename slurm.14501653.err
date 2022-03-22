@@ -1,0 +1,4 @@
+Traceback (most recent call last):
+  File "baseline-resnet18-imbalance.py", line 33, in <module>
+    transforms.RandomRotation(20, resample=PIL.Image.BICUBIC),
+NameError: name 'PIL' is not defined

@@ -89,19 +89,76 @@ plt.plot(list(range(len(loss_iteration))), loss_iteration)
 plt.savefig('baseline_resnet18_imbalance_loss.png')
 
 ###
-# Testing
+# Baseline Testing
 ###
 model.eval()
 print(len(test_dataset))
 acc = 0
+predictions = []
+true = []
 for i, (x,y) in tqdm(enumerate(test_dataset)):
     x = x.cuda()
     y = y.cuda()
     pred = model(x)
     pred = torch.argmax(pred,dim=1).item()
     # print(pred.item(), y.squeeze(0).item())
-    print(pred)
+    # print(pred)
+    predictions.append(pred)
+    true.append(y.item())
     if pred == y.item():
         acc += 1
 print('Baseline Accuracy: ' + str(float(acc/len(test_dataset))))
+
+from sklearn.metrics import confusion_matrix
+
+import seaborn as sns
+
+cf_matrix = confusion_matrix(true, predictions)
+ax = sns.heatmap(cf_matrix, annot=True, cmap='Blues')
+
+ax.set_title('Baseline Confusion Matrix\n\n');
+ax.set_xlabel('\nPredicted Values')
+ax.set_ylabel('Actual Values ');
+
+## Ticket labels - List must be in alphabetical order
+ax.xaxis.set_ticklabels(['Minority','Majority'])
+ax.yaxis.set_ticklabels(['Minority','Majoirty'])
+
+## Display the visualization of the Confusion Matrix.
+plt.savefig('baseline-confusion-matrix.png')
+
+from advertorch.attacks import GradientSignAttack
+adversary = GradientSignAttack(model, loss_fn=criterion, eps=0.3, clip_min=0.0, clip_max=1.0, targeted=False)
+
+adv_acc = 0
+predictions = []
+true = []
+for i, (x,y) in tqdm(enumerate(test_dataset)):
+    x = x.cuda()
+    y = y.cuda()
+    adv_untargeted = adversary.perturb(x, y)
+    pred = model(adv_untargeted)
+    pred = torch.argmax(pred,dim=1).item()
+    # print(pred.item(), y.squeeze(0).item())
+    # print(pred)
+    predictions.append(pred)
+    true.append(y.item())
+    if pred == y.item():
+        adv_acc += 1
+print('Adversarial Attack Accuracy: ' + str(float(adv_acc/len(test_dataset))))
+
+
+cf_matrix = confusion_matrix(true, predictions)
+ax = sns.heatmap(cf_matrix, annot=True, cmap='Blues')
+
+ax.set_title('Baseline Confusion Matrix\n\n');
+ax.set_xlabel('\nPredicted Values')
+ax.set_ylabel('Actual Values ');
+
+## Ticket labels - List must be in alphabetical order
+ax.xaxis.set_ticklabels(['Minority','Majority'])
+ax.yaxis.set_ticklabels(['Minority','Majoirty'])
+
+## Display the visualization of the Confusion Matrix.
+plt.savefig('baseline-adversarial-attack-confusion-matrix.png')
 print('Done')

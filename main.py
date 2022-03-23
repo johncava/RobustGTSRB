@@ -68,6 +68,21 @@ loss_iteration = []
 for epoch in range(max_epochs):
     start = time.time()
     epoch_loss = []
+    loss_iteration_base = []
+    loss_iteration_adv = []
+    # Regular Training
+    for i, (x,y) in tqdm(enumerate(dataset_loader)):
+        x = x.cuda()
+        y = y.cuda()
+        pred = model(x)
+        optimizer.zero_grad()
+        loss = criterion(pred, y)
+        # print(torch.isnan(x).any())
+        loss_iteration_base.append(loss.item())
+        loss.backward()
+        torch.nn.utils.clip_grad_norm_(model.parameters(), 1)
+        optimizer.step()
+    # Adversarial Training
     for i, (x,y) in tqdm(enumerate(dataset_loader)):
         x = x.cuda()
         y = y.cuda()
@@ -76,12 +91,11 @@ for epoch in range(max_epochs):
         optimizer.zero_grad()
         loss = criterion(pred, y)
         # print(torch.isnan(x).any())
-        epoch_loss.append(loss.item())
-        loss_iteration.append(loss.item())
+        loss_iteration_adv.append(loss.item())
         loss.backward()
         torch.nn.utils.clip_grad_norm_(model.parameters(), 1)
         optimizer.step()
-    loss_iteration.append(np.mean(epoch_loss))
+    loss_iteration.append(np.mean(loss_iteration_base) + np.mean(loss_iteration_adv))
     end = time.time()
     print('Epoch ' + str(epoch) + ': ' + str(end-start) + 's')
 
@@ -93,7 +107,7 @@ plt.plot(list(range(len(loss_iteration))), loss_iteration)
 plt.savefig('at_resnet18_imbalance_loss.png')
 
 ###
-# Baseline Testing
+# AT Testing
 ###
 model.eval()
 print(len(test_dataset))
@@ -122,7 +136,7 @@ plt.figure()
 cf_matrix = confusion_matrix(true, predictions)
 ax = sns.heatmap(cf_matrix, annot=True, cmap='Blues', fmt='.5f')
 
-ax.set_title('Baseline Confusion Matrix\n\n');
+ax.set_title('AT Confusion Matrix\n\n');
 ax.set_xlabel('\nPredicted Values')
 ax.set_ylabel('Actual Values ');
 

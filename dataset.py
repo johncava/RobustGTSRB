@@ -139,14 +139,14 @@ class GTSRBImbalance(Dataset):
             class_id = int(data.split('/')[-2])
             if class_id == self.minority:
                 class_id = 0
-                minority.append(data, class_id)
+                minority.append((data, class_id))
             if class_id != self.minority:
                 class_id = 1
-                majority.append(data, class_id)
+                majority.append((data, class_id))
         minority_threshold = int(len(minority)*0.5)
         majority_threshold = int(len(majority)*0.8)
-        training_set = minority[:minority_threshold] + majority_threshold[:majority_threshold]
-        testing_set = minority[minority_threshold:] + majority_threshold[majority_threshold:]
+        training_set = minority[:minority_threshold] + majority[:majority_threshold]
+        testing_set = minority[minority_threshold:] + majority[majority_threshold:]
         return training_set, testing_set
 
     def __getitem__(self, idx):
@@ -156,7 +156,7 @@ class GTSRBImbalance(Dataset):
         if self.training:
             item = self.training_set[idx]
             class_id = item[1]
-            img = Image.open(item)
+            img = Image.open(item[0])
             img = img.resize((225,225))
             # img = img.resize((64,64))
             img = self.transform(img)
@@ -164,7 +164,7 @@ class GTSRBImbalance(Dataset):
         else:
             item = self.testing_set[idx]
             class_id = item[1]
-            img = Image.open(item)
+            img = Image.open(item[0])
             img = img.resize((225,225))
             # img = img.resize((64,64))
             img = self.transform(img)

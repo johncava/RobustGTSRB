@@ -85,6 +85,7 @@ for epoch in range(max_epochs):
 ##
 # Plot
 ##
+plt.figure()
 plt.plot(list(range(len(loss_iteration))), loss_iteration)
 plt.savefig('baseline_resnet18_imbalance_loss.png')
 
@@ -113,8 +114,10 @@ from sklearn.metrics import confusion_matrix
 
 import seaborn as sns
 
+plt.figure()
+
 cf_matrix = confusion_matrix(true, predictions)
-ax = sns.heatmap(cf_matrix, annot=True, cmap='Blues')
+ax = sns.heatmap(cf_matrix, annot=True, cmap='Blues', fmt='.5f')
 
 ax.set_title('Baseline Confusion Matrix\n\n');
 ax.set_xlabel('\nPredicted Values')
@@ -147,11 +150,11 @@ for i, (x,y) in tqdm(enumerate(test_dataset)):
         adv_acc += 1
 print('Adversarial Attack Accuracy: ' + str(float(adv_acc/len(test_dataset))))
 
-
+plt.figure()
 cf_matrix = confusion_matrix(true, predictions)
-ax = sns.heatmap(cf_matrix, annot=True, cmap='Blues')
+ax = sns.heatmap(cf_matrix, annot=True, cmap='Blues', fmt='.5f')
 
-ax.set_title('Baseline Confusion Matrix\n\n');
+ax.set_title('Baseline Adversarial Attack Confusion Matrix\n\n');
 ax.set_xlabel('\nPredicted Values')
 ax.set_ylabel('Actual Values ');
 

@@ -8,6 +8,23 @@ import torchvision
 import torchvision.models as models
 import PIL
 
+##
+# Argparse
+##
+import argparse
+parser = argparse.ArgumentParser(description='Process some integers.')
+parser.add_argument('--loss')
+parser.add_argument('--param')
+
+args = parser.parse_args()
+##
+# Seed
+##
+import random
+torch.manual_seed(0)
+random.seed(0)
+np.random.seed(0)
+
 ###
 # Model Checking
 ###
@@ -54,7 +71,15 @@ test_dataset = torch.utils.data.DataLoader(gtsrb_dataset_test,
 # Initial Training
 ###
 model = model.cuda()
-criterion = nn.CrossEntropyLoss()
+from losses import *
+criterion = None
+if args.loss == 'CE':
+    criterion = nn.CrossEntropyLoss()
+elif args.loss == 'ALPHA':
+    criterion = AlphaLoss(classes=2, params={'alpha' : float(args.param)})
+elif args.loss == 'FOCAL':
+    criterion = FocalLoss(params={'gamma' : float(args.param)})
+
 from advertorch.attacks import GradientSignAttack
 adversary = GradientSignAttack(model, loss_fn=criterion, eps=0.3, clip_min=0.0, clip_max=1.0, targeted=False)
 
@@ -65,11 +90,10 @@ import time
 from tqdm import tqdm
 print(len(dataset_loader))
 loss_iteration = []
+
 for epoch in range(max_epochs):
     start = time.time()
-    epoch_loss = []
     loss_iteration_base = []
-    loss_iteration_adv = []
     # Regular Training
     for i, (x,y) in tqdm(enumerate(dataset_loader)):
         x = x.cuda()
@@ -82,6 +106,13 @@ for epoch in range(max_epochs):
         loss.backward()
         torch.nn.utils.clip_grad_norm_(model.parameters(), 1)
         optimizer.step()
+    loss_iteration.append(np.mean(loss_iteration_base))
+    end = time.time()
+    print('Epoch ' + str(epoch) + ': ' + str(end-start) + 's')
+
+for epoch in range(max_epochs):
+    start = time.time()
+    loss_iteration_adv = []
     # Adversarial Training
     for i, (x,y) in tqdm(enumerate(dataset_loader)):
         x = x.cuda()
@@ -95,7 +126,7 @@ for epoch in range(max_epochs):
         loss.backward()
         torch.nn.utils.clip_grad_norm_(model.parameters(), 1)
         optimizer.step()
-    loss_iteration.append(np.mean(loss_iteration_base) + np.mean(loss_iteration_adv))
+    loss_iteration.append(np.mean(loss_iteration_adv))
     end = time.time()
     print('Epoch ' + str(epoch) + ': ' + str(end-start) + 's')
 

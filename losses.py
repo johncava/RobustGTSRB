@@ -1,5 +1,6 @@
 
 import torch
+import torch.nn.functional as F
 
 # One-hot encoding for 'target' with K classes
 def to_one_hot(target, K):
@@ -33,3 +34,22 @@ class AlphaLoss(torch.nn.Module):
         target_onehot = to_one_hot(target, self.classes)
 
         return alphaloss(output, target_onehot.to(self.device), self.params, self.device)
+
+
+class FocalLoss(torch.nn.Module):
+    '''
+        https://github.com/clcarwin/focal_loss_pytorch/blob/master/focalloss.py
+        NOTE: Gokul_prasad implementation https://discuss.pytorch.org/t/is-this-a-correct-implementation-for-focal-loss-in-pytorch/43327/15 was better
+    '''
+
+    def __init__(self, params):
+        super(FocalLoss, self).__init__()
+        self.gamma = params['gamma']
+        self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+
+    def forward(self, input, target):
+        self.gamma = torch.tensor(self.gamma).float().to(self.device)
+        ce_loss = F.cross_entropy(input, target,reduction='mean') 
+        pt = torch.exp(-ce_loss)
+        focal_loss = ((1 - pt) ** self.gamma * ce_loss).mean()
+        return focal_loss

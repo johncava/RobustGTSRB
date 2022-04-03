@@ -8,6 +8,16 @@ import torchvision
 import torchvision.models as models
 import PIL
 
+##
+# Argparse
+##
+import argparse
+parser = argparse.ArgumentParser(description='Process some integers.')
+parser.add_argument('--loss')
+parser.add_argument('--param')
+
+args = parser.parse_args()
+
 ###
 # Model Checking
 ###
@@ -15,6 +25,15 @@ import PIL
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+
+
+##
+# Seed
+##
+import random
+torch.manual_seed(0)
+random.seed(0)
+np.random.seed(0)
 
 model = models.resnet18(pretrained=True)
 num_ftrs = model.fc.in_features
@@ -53,9 +72,15 @@ test_dataset = torch.utils.data.DataLoader(gtsrb_dataset_test,
 ###
 # Initial Training
 ###
-
 model = model.cuda()
-criterion = nn.CrossEntropyLoss()
+from losses import *
+criterion = None
+if args.loss == 'CE':
+    criterion = nn.CrossEntropyLoss()
+elif args.loss == 'ALPHA':
+    criterion = AlphaLoss(classes=2, params={'alpha' : float(args.param)})
+elif args.loss == 'FOCAL':
+    criterion = FocalLoss(params={'gamma' : float(args.param)})
 import torch.optim as optim
 optimizer = optim.Adam(model.parameters(), lr=1e-3)
 max_epochs = 16

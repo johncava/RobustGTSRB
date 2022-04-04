@@ -178,6 +178,8 @@ ax.yaxis.set_ticklabels(['Minority','Majoirty'])
 ## Display the visualization of the Confusion Matrix.
 plt.savefig('at-confusion-matrix.png')
 
+criterion = nn.CrossEntropyLoss()
+adversary = GradientSignAttack(model, loss_fn=criterion, eps=0.3, clip_min=0.0, clip_max=1.0, targeted=False)
 adv_acc = 0
 predictions = []
 true = []

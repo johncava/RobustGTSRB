@@ -156,6 +156,7 @@ ax.yaxis.set_ticklabels(['Minority','Majoirty'])
 plt.savefig('baseline-confusion-matrix.png')
 
 from advertorch.attacks import GradientSignAttack
+criterion = nn.CrossEntropyLoss()
 adversary = GradientSignAttack(model, loss_fn=criterion, eps=0.3, clip_min=0.0, clip_max=1.0, targeted=False)
 
 adv_acc = 0

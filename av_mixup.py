@@ -13,6 +13,16 @@ import torchvision.models as models
 import PIL
 
 ##
+# Argparse
+##
+import argparse
+parser = argparse.ArgumentParser(description='Process some integers.')
+parser.add_argument('--loss')
+parser.add_argument('--param')
+
+args = parser.parse_args()
+
+##
 # Seed
 ##
 import random
@@ -77,7 +87,14 @@ test_dataset = torch.utils.data.DataLoader(gtsrb_dataset_test,
 # Initial Training
 ###
 model = model.cuda()
-criterion = nn.CrossEntropyLoss()
+from losses import *
+criterion = None
+if args.loss == 'CE':
+    criterion = nn.CrossEntropyLoss()
+elif args.loss == 'ALPHA':
+    criterion = AlphaLoss(classes=2, params={'alpha' : float(args.param)})
+elif args.loss == 'FOCAL':
+    criterion = FocalLoss(params={'gamma' : float(args.param)})
 from advertorch.attacks import GradientSignAttack
 adversary = GradientSignAttack(model, loss_fn=criterion, eps=0.3, clip_min=0.0, clip_max=1.0, targeted=False)
 
@@ -118,12 +135,12 @@ for epoch in range(max_epochs):
     start = time.time()
     loss_iteration_adv = []
     for i, (x,y) in tqdm(enumerate(dataset_loader)):
-        x = x.half().cuda()
+        x = x.cuda()
         y = y.cuda()
         adv_untargeted = adversary.perturb(x, y)
         # AV Mixup
-        alpha = torch.rand(1).half().cuda()
-        av_mix = alpha*x + (torch.ones(1).half().cuda() - alpha)*adv_untargeted
+        alpha = torch.rand(1).cuda()
+        av_mix = alpha*x + (torch.ones(1).cuda() - alpha)*adv_untargeted
         pred = model(av_mix)
         optimizer.zero_grad()
         loss = criterion(pred, y)
@@ -183,6 +200,8 @@ ax.yaxis.set_ticklabels(['Minority','Majoirty'])
 ## Display the visualization of the Confusion Matrix.
 plt.savefig('adv-mixup-confusion-matrix.png')
 
+criterion = nn.CrossEntropyLoss()
+adversary = GradientSignAttack(model, loss_fn=criterion, eps=0.3, clip_min=0.0, clip_max=1.0, targeted=False)
 adv_acc = 0
 predictions = []
 true = []

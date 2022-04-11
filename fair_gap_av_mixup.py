@@ -1,5 +1,5 @@
 ##
-# Fair AVMixup Implementation
+# Fair GAP AVMixup Implementation
 ##
 
 import matplotlib
@@ -122,24 +122,9 @@ for epoch in range(max_epochs):
         x2 = x2.cuda()
         y2 = y2.cuda()
 
-        # Fair Mixup
-        alpha = 1
-        gamma = beta(alpha, alpha)
-
-        batch_x_mix = x1 * gamma + x2 * (1 - gamma)
-        batch_x_mix = batch_x_mix.requires_grad_(True)
-
-        output = model(batch_x_mix)
-
-        # gradient regularization
-        gradx = torch.autograd.grad(output.sum(), batch_x_mix, create_graph=True)
-        # print(gradx)
-        gradx = gradx[0]
-        # print(gradx)
-        batch_x_d = x2 - x1
-        grad_inn = (gradx * batch_x_d).sum(1)
-        E_grad = grad_inn.mean()
-        loss_reg = torch.abs(E_grad)
+        output0 = model(x1)
+        output1 = model(x2)
+        loss_reg = torch.abs(output0.mean() - output1.mean())
 
         # ERM loss
         batch_x = torch.cat((x1, x2), 0)
@@ -194,7 +179,7 @@ for epoch in range(max_epochs):
 ##
 plt.figure()
 plt.plot(list(range(len(loss_iteration))), loss_iteration)
-plt.savefig('fair_adv_mixup_resnet18_imbalance_loss.png')
+plt.savefig('fair_gap_adv_mixup_resnet18_imbalance_loss.png')
 
 ###
 # AT Testing
@@ -235,7 +220,7 @@ ax.xaxis.set_ticklabels(['Minority','Majority'])
 ax.yaxis.set_ticklabels(['Minority','Majoirty'])
 
 ## Display the visualization of the Confusion Matrix.
-plt.savefig('fair-adv-mixup-confusion-matrix.png')
+plt.savefig('fair-gap-adv-mixup-confusion-matrix.png')
 
 criterion = nn.CrossEntropyLoss()
 adversary = GradientSignAttack(model, loss_fn=criterion, eps=0.3, clip_min=0.0, clip_max=1.0, targeted=False)
@@ -269,6 +254,6 @@ ax.xaxis.set_ticklabels(['Minority','Majority'])
 ax.yaxis.set_ticklabels(['Minority','Majoirty'])
 
 ## Display the visualization of the Confusion Matrix.
-plt.savefig('fair-adv-mixup-adversarial-attack-confusion-matrix.png')
+plt.savefig('fair-gap-adv-mixup-adversarial-attack-confusion-matrix.png')
 
 print('Done')
